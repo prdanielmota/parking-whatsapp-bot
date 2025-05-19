@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  app:
+    # Constrói a imagem a partir do Dockerfile no diretório atual
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: parking_bot_app
+    # Reinicia o contêiner a menos que seja parado manualmente
+    restart: unless-stopped
+    # Variáveis de ambiente para a aplicação
+    environment:
+      - NODE_ENV=production
+      # URI de conexão para o serviço MongoDB definido abaixo
+      - MONGO_URI=mongodb://mongo:27017/parking_bot
+      # Define o caminho executável do Chromium dentro do contêiner
+      - PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+    # Mapeia volumes para persistir dados e logs, e montar configuração
+    volumes:
+      # Persiste tokens de sessão do WhatsApp
+      - ./tokens:/opt/parking-bot/tokens
+      # Persiste logs da aplicação
+      - ./logs:/opt/parking-bot/logs
+      # Persiste arquivos de mídia (placas processadas, etc.)
+      - ./media:/opt/parking-bot/media
+      # Persiste backups do banco de dados (se gerados pelo app)
+      - ./backups:/opt/parking-bot/backups
+      # Monta o arquivo de configuração local no contêiner (leitura)
+      # Certifique-se que config/config.js existe localmente
+      - ./config/config.js:/opt/parking-bot/config/config.js:ro
+    # Define que este serviço depende do serviço 'mongo' estar pronto
+    depends_on:
+      - mongo
+    # (Opcional) Mapeia porta se a API REST estiver habilitada no config.js
+    # ports:
+    #   - "3000:3000"
+
+  mongo:
+    # Usa a imagem oficial do MongoDB versão 4.4
+    image: mongo:4.4
+    container_name: parking_bot_mongo
+    # Reinicia o contêiner a menos que seja parado manualmente
+    restart: unless-stopped
+    # Mapeia um volume nomeado para persistir os dados do MongoDB
+    volumes:
+      - mongo_data:/data/db
+    # (Opcional) Mapeia a porta do MongoDB para acesso externo (não recomendado para produção)
+    # ports:
+    #   - "27017:27017"
+
+# Define volumes nomeados (gerenciados pelo Docker)
+volumes:
+  mongo_data:
+
