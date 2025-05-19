@@ -33,7 +33,7 @@ const logger = winston.createLogger({
 // Configuração do MongoDB
 const connectDB = async () => {
   try {
-    const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/parking-bot';
+    const mongoURI = process.env.MONGODB_URI || 'mongodb://mongodb:27017/parking-bot';
     
     logger.info(`Conectando ao MongoDB: ${mongoURI}`);
     
